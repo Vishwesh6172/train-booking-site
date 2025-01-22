@@ -1,144 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Train Booking System</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            text-align: center;
-        }
-        form {
-            display: inline-block;
-            text-align: left;
-            margin-bottom: 30px;
-        }
-        input, select, button {
-            margin: 10px 0;
-            padding: 10px;
-            width: 100%;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .results {
-            margin-top: 20px;
-            text-align: left;
-            display: none;
-        }
-    </style>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Train Booking System</title>
+  <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.0.2/firebase-database.js"></script>
 </head>
 <body>
-    <h1>Train Booking System</h1>
-    <p>Find and book your train tickets easily!</p>
-    
-    <form id="searchForm">
-        <label for="boarding">Boarding Station:</label><br>
-        <input type="text" id="boarding" name="boarding" placeholder="Enter boarding station" required><br>
+  <h1>Train Booking System</h1>
+  
+  <div>
+    <label for="boarding">Boarding Station: </label>
+    <input type="text" id="boarding" placeholder="Enter Boarding Station">
+    <label for="destination">Destination Station: </label>
+    <input type="text" id="destination" placeholder="Enter Destination Station">
+    <button id="searchButton">Search Trains</button>
+  </div>
 
-        <label for="destination">Destination Station:</label><br>
-        <input type="text" id="destination" name="destination" placeholder="Enter destination station" required><br>
+  <div id="trainResults">
+    <h2>Available Trains</h2>
+    <ul id="trainList"></ul>
+    <p id="noTrainsMessage" style="color: red;"></p> <!-- Message for no trains found -->
+  </div>
 
-        <label for="date">Travel Date:</label><br>
-        <input type="date" id="date" name="date" required><br>
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      authDomain: "train-booking-system-6bba0.firebaseapp.com",
+      databaseURL: "https://train-booking-system-6bba0-default-rtdb.firebaseio.com",
+      projectId: "train-booking-system-6bba0",
+      storageBucket: "train-booking-system-6bba0.appspot.com",
+      messagingSenderId: "400655444474",
+      appId: "1:400655444474:web:4626f33a141197779a1c43"
+    };
 
-        <label for="type">Type of Booking:</label><br>
-        <select id="type" name="type" required>
-            <option value="normal">Normal</option>
-            <option value="tatkal">Tatkal</option>
-            <option value="senior">Senior Citizen</option>
-            <option value="disabled">Disabled</option>
-        </select><br>
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const database = firebase.database(app);
 
-        <button type="submit">Search Trains</button>
-    </form>
+    // Function to handle search and display available trains
+    document.getElementById("searchButton").addEventListener("click", function() {
+      const boarding = document.getElementById("boarding").value.trim();
+      const destination = document.getElementById("destination").value.trim();
+      const trainList = document.getElementById("trainList");
+      const noTrainsMessage = document.getElementById("noTrainsMessage");
 
-    <div class="results" id="results">
-        <h2>Search Results</h2>
-        <div id="trainResults"></div>
-    </div>
+      // Clear previous results and error message
+      trainList.innerHTML = "";
+      noTrainsMessage.textContent = "";
 
-    <script>
-        // Firebase Configuration (Ensure you set this correctly with your details)
-        const firebaseConfig = {
-            authDomain: "train-booking-system-6bba0.firebaseapp.com",
-            databaseURL: "https://train-booking-system-6bba0-default-rtdb.firebaseio.com",
-            projectId: "train-booking-system-6bba0",
-            storageBucket: "train-booking-system-6bba0.appspot.com",
-            messagingSenderId: "400655444474",
-            appId: "1:400655444474:web:4626f33a141197779a1c43"
-        };
+      if (boarding && destination) {
+        // Query the Firebase database for trains
+        const trainsRef = database.ref("trains");
+        trainsRef.once("value", function(snapshot) {
+          const trains = snapshot.val();
+          
+          let foundTrains = false;
+          
+          // Loop through the trains and display those matching the query
+          for (const trainId in trains) {
+            const train = trains[trainId];
+            
+            // Check if the train matches the boarding and destination stations
+            if (train.boarding.toLowerCase() === boarding.toLowerCase() && 
+                train.destination.toLowerCase() === destination.toLowerCase()) {
+              foundTrains = true;
 
-        // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-
-        // Handle form submission
-        document.getElementById("searchForm").addEventListener("submit", function(event) {
-            event.preventDefault();
-
-            // Get user input
-            const boarding = document.getElementById("boarding").value.toLowerCase();
-            const destination = document.getElementById("destination").value.toLowerCase();
-            const date = document.getElementById("date").value;
-            const type = document.getElementById("type").value;
-
-            // Query the database for trains
-            const trainsRef = firebase.database().ref("trains");
-            trainsRef.once("value", snapshot => {
-                const data = snapshot.val();
-                const results = [];
-
-                // Iterate through all the trains and find matches based on boarding and destination
-                for (const trainId in data) {
-                    const train = data[trainId];
-                    if (
-                        train.boarding.toLowerCase() === boarding &&
-                        train.destination.toLowerCase() === destination
-                    ) {
-                        results.push(train);
-                    }
-                }
-
-                // Display the results
-                displayResults(results, date, type);
-            });
-        });
-
-        // Display results
-        function displayResults(trains, date, type) {
-            const resultsDiv = document.getElementById("trainResults");
-            resultsDiv.innerHTML = ""; // Clear previous results
-
-            if (trains.length === 0) {
-                resultsDiv.innerHTML = `<p>No trains found for the selected route and date.</p>`;
-            } else {
-                trains.forEach(train => {
-                    resultsDiv.innerHTML += `
-                        <p>
-                            <strong>Train Name:</strong> ${train.name}<br>
-                            <strong>Departure:</strong> ${train.departure}<br>
-                            <strong>Arrival:</strong> ${train.arrival}<br>
-                            <strong>Date:</strong> ${date}<br>
-                            <strong>Type:</strong> ${type}<br>
-                        </p>
-                        <hr>
-                    `;
-                });
+              // Create an element for each matching train
+              const listItem = document.createElement("li");
+              listItem.innerHTML = `
+                <strong>${train.name}</strong><br>
+                Departure: ${train.departure}<br>
+                Arrival: ${train.arrival}<br>
+                Boarding: ${train.boarding}<br>
+                Destination: ${train.destination}<br>
+                <button>Book Now</button>
+              `;
+              trainList.appendChild(listItem);
             }
-
-            document.getElementById("results").style.display = "block";
-        }
-    </script>
+          }
+          
+          if (!foundTrains) {
+            // Show message if no matching trains are found
+            noTrainsMessage.textContent = "No trains available for the selected stations.";
+          }
+        });
+      } else {
+        alert("Please enter both boarding and destination stations.");
+      }
+    });
+  </script>
 </body>
 </html>
