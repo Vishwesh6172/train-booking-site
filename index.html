@@ -1,1 +1,56 @@
-"<!DOCTYPE html><html><head><title>Train Booking</title></head><body><h1>Welcome to Train Booking!</h1></body></html>" 
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Train Booking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+        }
+        form {
+            display: inline-block;
+            text-align: left;
+        }
+        input, select, button {
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>Train Booking System</h1>
+    <p>Find and book your train tickets easily!</p>
+    
+    <form action="#" method="POST">
+        <label for="boarding">Boarding Station:</label><br>
+        <input type="text" id="boarding" name="boarding" placeholder="Enter boarding station" required><br>
+
+        <label for="destination">Destination Station:</label><br>
+        <input type="text" id="destination" name="destination" placeholder="Enter destination station" required><br>
+
+        <label for="date">Travel Date:</label><br>
+        <input type="date" id="date" name="date" required><br>
+
+        <label for="type">Type of Booking:</label><br>
+        <select id="type" name="type" required>
+            <option value="normal">Normal</option>
+            <option value="tatkal">Tatkal</option>
+            <option value="senior">Senior Citizen</option>
+            <option value="disabled">Disabled</option>
+        </select><br>
+
+        <button type="submit">Search Trains</button>
+    </form>
+</body>
+</html>
