@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Train Booking</title>
     <style>
         body {
@@ -33,6 +35,8 @@
             display: none;
         }
     </style>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js"></script>
 </head>
 <body>
     <h1>Train Booking System</h1>
@@ -61,30 +65,78 @@
 
     <div class="results" id="results">
         <h2>Search Results</h2>
-        <p><strong>Boarding Station:</strong> <span id="resultBoarding"></span></p>
-        <p><strong>Destination Station:</strong> <span id="resultDestination"></span></p>
-        <p><strong>Travel Date:</strong> <span id="resultDate"></span></p>
-        <p><strong>Type of Booking:</strong> <span id="resultType"></span></p>
+        <div id="trainResults"></div>
     </div>
 
     <script>
+        // Firebase configuration (No API Key)
+        const firebaseConfig = {
+            authDomain: "train-booking-system-6bba0.firebaseapp.com",
+            databaseURL: "https://train-booking-system-6bba0-default-rtdb.firebaseio.com",
+            projectId: "train-booking-system-6bba0",
+            storageBucket: "train-booking-system-6bba0.appspot.com",
+            messagingSenderId: "400655444474",
+            appId: "1:400655444474:web:4626f33a141197779a1c43"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
         // Handle form submission
         document.getElementById("searchForm").addEventListener("submit", function(event) {
-            event.preventDefault(); // Prevent form from reloading the page
+            event.preventDefault();
 
             // Get user input
-            const boarding = document.getElementById("boarding").value;
-            const destination = document.getElementById("destination").value;
+            const boarding = document.getElementById("boarding").value.toLowerCase();
+            const destination = document.getElementById("destination").value.toLowerCase();
             const date = document.getElementById("date").value;
             const type = document.getElementById("type").value;
 
-            // Display results
-            document.getElementById("resultBoarding").textContent = boarding;
-            document.getElementById("resultDestination").textContent = destination;
-            document.getElementById("resultDate").textContent = date;
-            document.getElementById("resultType").textContent = type;
-            document.getElementById("results").style.display = "block";
+            // Query the database for trains
+            const trainsRef = firebase.database().ref("trains");
+            trainsRef.once("value", snapshot => {
+                const data = snapshot.val();
+                const results = [];
+
+                for (const trainId in data) {
+                    const train = data[trainId];
+                    if (
+                        train.boarding.toLowerCase() === boarding &&
+                        train.destination.toLowerCase() === destination
+                    ) {
+                        results.push(train);
+                    }
+                }
+
+                displayResults(results, date, type);
+            });
         });
+
+        // Display results
+        function displayResults(trains, date, type) {
+            const resultsDiv = document.getElementById("trainResults");
+            resultsDiv.innerHTML = ""; // Clear previous results
+
+            if (trains.length === 0) {
+                resultsDiv.innerHTML = `<p>No trains found for the selected route and date.</p>`;
+            } else {
+                trains.forEach(train => {
+                    resultsDiv.innerHTML += `
+                        <p>
+                            <strong>Train Name:</strong> ${train.name}<br>
+                            <strong>Departure:</strong> ${train.departure}<br>
+                            <strong>Arrival:</strong> ${train.arrival}<br>
+                            <strong>Date:</strong> ${date}<br>
+                            <strong>Type:</strong> ${type}<br>
+                        </p>
+                        <hr>
+                    `;
+                });
+            }
+
+            document.getElementById("results").style.display = "block";
+        }
     </script>
 </body>
 </html>
