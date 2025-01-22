@@ -11,6 +11,7 @@
         form {
             display: inline-block;
             text-align: left;
+            margin-bottom: 30px;
         }
         input, select, button {
             margin: 10px 0;
@@ -26,13 +27,18 @@
         button:hover {
             background-color: #45a049;
         }
+        .results {
+            margin-top: 20px;
+            text-align: left;
+            display: none;
+        }
     </style>
 </head>
 <body>
     <h1>Train Booking System</h1>
     <p>Find and book your train tickets easily!</p>
     
-    <form action="#" method="POST">
+    <form id="searchForm">
         <label for="boarding">Boarding Station:</label><br>
         <input type="text" id="boarding" name="boarding" placeholder="Enter boarding station" required><br>
 
@@ -52,5 +58,33 @@
 
         <button type="submit">Search Trains</button>
     </form>
+
+    <div class="results" id="results">
+        <h2>Search Results</h2>
+        <p><strong>Boarding Station:</strong> <span id="resultBoarding"></span></p>
+        <p><strong>Destination Station:</strong> <span id="resultDestination"></span></p>
+        <p><strong>Travel Date:</strong> <span id="resultDate"></span></p>
+        <p><strong>Type of Booking:</strong> <span id="resultType"></span></p>
+    </div>
+
+    <script>
+        // Handle form submission
+        document.getElementById("searchForm").addEventListener("submit", function(event) {
+            event.preventDefault(); // Prevent form from reloading the page
+
+            // Get user input
+            const boarding = document.getElementById("boarding").value;
+            const destination = document.getElementById("destination").value;
+            const date = document.getElementById("date").value;
+            const type = document.getElementById("type").value;
+
+            // Display results
+            document.getElementById("resultBoarding").textContent = boarding;
+            document.getElementById("resultDestination").textContent = destination;
+            document.getElementById("resultDate").textContent = date;
+            document.getElementById("resultType").textContent = type;
+            document.getElementById("results").style.display = "block";
+        });
+    </script>
 </body>
 </html>
