@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Train Booking</title>
+    <title>Train Booking System</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -69,7 +69,7 @@
     </div>
 
     <script>
-        // Firebase configuration (No API Key)
+        // Firebase Configuration (Ensure you set this correctly with your details)
         const firebaseConfig = {
             authDomain: "train-booking-system-6bba0.firebaseapp.com",
             databaseURL: "https://train-booking-system-6bba0-default-rtdb.firebaseio.com",
@@ -99,6 +99,7 @@
                 const data = snapshot.val();
                 const results = [];
 
+                // Iterate through all the trains and find matches based on boarding and destination
                 for (const trainId in data) {
                     const train = data[trainId];
                     if (
@@ -109,6 +110,7 @@
                     }
                 }
 
+                // Display the results
                 displayResults(results, date, type);
             });
         });
